@@ -2,9 +2,9 @@ name: Github Actions CI
 # Add comment
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build-and-push:
@@ -30,7 +30,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Build Docker image
-        run: docker build -t taakujobi/app:latest .
+        run: docker build -t taakujobi/weatherApp:latest .
 
       - name: Push Docker image
-        run: docker push taakujobi/app:latest
+        run: docker push taakujobi/weatherApp:latest
