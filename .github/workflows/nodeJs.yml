@@ -14,6 +14,49 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+       #Tag workflow begins
+
+      - name: Setup git user
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Generate next release tag
+        id: tag
+        run: |
+          # Get latest existing tag (sorted by version)
+          latest_tag=$(git ls-remote --tags origin | grep -o 'refs/tags/v.*' | sed 's#refs/tags/##' | sort -V | tail -n 1)
+          latest_tag=${latest_tag:-v0.0.0}
+
+          echo "Latest tag: $latest_tag"
+
+          if [[ "$latest_tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            major=${BASH_REMATCH[1]}
+            minor=${BASH_REMATCH[2]}
+            patch=${BASH_REMATCH[3]}
+          else
+            major=0
+            minor=0
+            patch=0
+          fi
+
+          # Loop to find next available tag
+          while true; do
+            patch=$((patch + 1))
+            new_tag="v$major.$minor.$patch"
+            if ! git ls-remote --tags origin | grep -q "refs/tags/$new_tag$"; then
+              break
+            fi
+          done
+
+          echo "Using new tag: $new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+
+          # Tag and push
+          git tag "$new_tag"
+          git push origin "$new_tag"       #Tag workflow ends
+        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
